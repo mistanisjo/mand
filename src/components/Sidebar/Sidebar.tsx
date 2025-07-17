@@ -141,19 +141,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         w-80 bg-white/95 backdrop-blur-xl border-l border-gray-200/50 shadow-2xl
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200/50 bg-white/50 backdrop-blur-sm">
           <h2 className="text-lg font-bold text-gray-900">المحادثات</h2>
           <div className="flex items-center space-x-2 space-x-reverse">
             <button
               onClick={handleNewConversation}
-              className="p-2 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors duration-200 shadow-lg shadow-orange-500/25"
+              className="p-2 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
               aria-label="محادثة جديدة"
             >
               <Plus className="h-4 w-4" />
             </button>
             <button
               onClick={onToggle}
-              className="p-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-200 lg:hidden"
+              className="p-2 rounded-xl bg-gray-100/80 text-gray-600 hover:bg-gray-200/80 transition-all duration-200 lg:hidden backdrop-blur-sm"
               aria-label="إغلاق الشريط الجانبي"
             >
               <X className="h-4 w-4" />
@@ -163,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
 
         {/* User Info */}
         {user && (
-          <div className="p-6 border-b border-gray-200/50">
+          <div className="p-6 border-b border-gray-200/50 bg-gradient-to-r from-white/30 to-white/10">
             <div className="flex items-center space-x-3 space-x-reverse">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-medium">
                 {user.avatar ? (
@@ -189,14 +189,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         )}
 
         {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
           {conversations.length === 0 ? (
             <div className="text-center py-12">
               <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-sm">لا توجد محادثات بعد</p>
               <button
                 onClick={handleNewConversation}
-                className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors duration-200 text-sm"
+                className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all duration-200 text-sm shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
               >
                 ابدأ محادثة جديدة
               </button>
@@ -215,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200/50">
+        <div className="p-4 border-t border-gray-200/50 bg-white/30 backdrop-blur-sm">
           <div className="flex items-center justify-center space-x-2 space-x-reverse text-xs text-gray-500">
             <Calendar className="h-3 w-3" />
             <span>آخر تحديث: اليوم</span>
@@ -223,25 +223,5 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         </div>
       </div>
     </>
-  );
-};
-
-// Hamburger Menu Button Component
-export const SidebarToggle: React.FC<{ isOpen: boolean; onToggle: () => void }> = ({ 
-  isOpen, 
-  onToggle 
-}) => {
-  return (
-    <button
-      onClick={onToggle}
-      className="fixed top-4 right-4 z-50 p-3 rounded-2xl bg-white/90 backdrop-blur-md border border-gray-200/50 shadow-lg hover:bg-white transition-all duration-200 lg:hidden"
-      aria-label={isOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
-    >
-      {isOpen ? (
-        <X className="h-5 w-5 text-gray-700" />
-      ) : (
-        <Menu className="h-5 w-5 text-gray-700" />
-      )}
-    </button>
   );
 };
