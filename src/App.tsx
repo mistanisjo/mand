@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, User, LogOut, MapPin, Phone, Users, Building, Heart, Hotel, Shield } from 'lucide-react';
+import { Search, User, LogOut, MapPin, Phone, Users, Building, Heart, Hotel, Shield, Menu, X } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ConversationProvider } from './contexts/ConversationContext';
-import { Sidebar, SidebarToggle } from './components/Sidebar/Sidebar';
+import { Sidebar } from './components/Sidebar/Sidebar';
 import { AuthModal } from './components/Auth/AuthModal';
 
 const AppContent: React.FC = () => {
@@ -71,7 +71,37 @@ const AppContent: React.FC = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Close sidebar when clicking outside on mobile
+  // Close sidebar when clicking outside
+  const handleOverlayClick = () => {
+    setSidebarOpen(false);
+  };
+
+  // Close sidebar on escape key
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [sidebarOpen]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [sidebarOpen]);
+
+  // Close sidebar when window resizes to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -83,15 +113,16 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close sidebar when route changes (if we had routing)
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 relative overflow-hidden" dir="rtl">
-      {/* Sidebar Toggle Button */}
-      <SidebarToggle isOpen={sidebarOpen} onToggle={toggleSidebar} />
+      {/* Sidebar Overlay with Glass Effect */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-all duration-300 ease-in-out"
+          onClick={handleOverlayClick}
+          aria-label="إغلاق الشريط الجانبي"
+        />
+      )}
 
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
@@ -104,7 +135,7 @@ const AppContent: React.FC = () => {
       />
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:mr-80' : ''}`}>
+      <div className="relative">
         {/* Enhanced Background Gradient */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           {/* Main central gradient */}
@@ -120,10 +151,26 @@ const AppContent: React.FC = () => {
         </div>
 
         {/* Fixed Navbar with Enhanced Glass Effect */}
-        <nav className="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-lg shadow-black/5">
+        <nav className="fixed top-0 left-0 right-0 z-30 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-lg shadow-black/5">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Logo */}
+              {/* Left side - Sidebar Toggle */}
+              <div className="flex items-center">
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2 rounded-xl bg-gray-100/80 text-gray-600 hover:bg-gray-200/80 hover:text-gray-800 transition-all duration-200 backdrop-blur-sm border border-gray-200/50 shadow-sm"
+                  aria-label={sidebarOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+                  aria-expanded={sidebarOpen}
+                >
+                  {sidebarOpen ? (
+                    <X className="h-5 w-5" />
+                  ) : (
+                    <Menu className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+
+              {/* Center - Logo */}
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
@@ -132,40 +179,43 @@ const AppContent: React.FC = () => {
                 </div>
               </div>
 
-              {/* Enhanced Search Bar with Liquid Glass */}
-              <div className="flex-1 max-w-2xl mx-8">
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    className="block w-full pr-10 pl-3 py-2.5 border border-white/30 rounded-2xl backdrop-blur-md bg-white/60 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-300/50 focus:bg-white/80 transition-all duration-300 shadow-lg shadow-black/5"
-                    placeholder="ابحث عن الخدمات..."
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
+              {/* Right side - Search and Auth */}
               <div className="flex items-center space-x-3 space-x-reverse">
+                {/* Enhanced Search Bar - Hidden on mobile, shown on tablet+ */}
+                <div className="hidden md:block">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <Search className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      className="block w-64 pr-9 pl-3 py-2 border border-white/30 rounded-xl backdrop-blur-md bg-white/60 placeholder-gray-500 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-300/50 focus:bg-white/80 transition-all duration-300 shadow-sm"
+                      placeholder="بحث سريع..."
+                    />
+                  </div>
+                </div>
+
+                {/* User Info - Hidden on mobile */}
                 {user && (
-                  <div className="hidden sm:flex items-center space-x-2 space-x-reverse text-sm text-gray-700">
+                  <div className="hidden lg:flex items-center space-x-2 space-x-reverse text-sm text-gray-700">
                     <span>مرحباً، {user.name}</span>
                   </div>
                 )}
+
+                {/* Auth Button */}
                 <button
                   onClick={handleAuthClick}
-                  className="flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white transition-colors duration-200 shadow-lg shadow-orange-500/25"
+                  className="flex items-center space-x-2 space-x-reverse px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white transition-colors duration-200 shadow-lg shadow-orange-500/25 text-sm"
                 >
                   {user ? (
                     <>
                       <LogOut className="h-4 w-4" />
-                      <span>تسجيل الخروج</span>
+                      <span className="hidden sm:inline">خروج</span>
                     </>
                   ) : (
                     <>
                       <User className="h-4 w-4" />
-                      <span>تسجيل الدخول</span>
+                      <span className="hidden sm:inline">دخول</span>
                     </>
                   )}
                 </button>
@@ -180,7 +230,7 @@ const AppContent: React.FC = () => {
           <section className="relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
               <div className="text-center">
-                <h1 className="text-6xl sm:text-7xl font-bold text-gray-900 mb-6">
+                <h1 className="hero-title text-6xl sm:text-7xl font-bold text-gray-900 mb-6">
                   مرحباً بكم في{' '}
                   <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                     مندلين
@@ -193,7 +243,7 @@ const AppContent: React.FC = () => {
                 {/* Enhanced Hero Search Bar with Liquid Glass */}
                 <div className="max-w-2xl mx-auto mb-16">
                   <div className="relative">
-                    <div className="backdrop-blur-2xl bg-white/40 rounded-3xl p-6 border border-white/30 shadow-2xl shadow-black/10 ring-1 ring-white/20">
+                    <div className="liquid-glass-search rounded-3xl p-6 shadow-2xl shadow-black/10">
                       <div className="flex items-center space-x-4 space-x-reverse">
                         <Search className="h-6 w-6 text-orange-500 flex-shrink-0" />
                         <input
@@ -201,26 +251,46 @@ const AppContent: React.FC = () => {
                           className="flex-1 bg-transparent text-lg placeholder-gray-500 text-gray-900 focus:outline-none"
                           placeholder="ابحث عن الخدمة التي تحتاجها..."
                         />
-                        <button className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/30">
+                        <button className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg shadow-orange-500/30 hover-lift">
                           بحث
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-orange-500 mb-2">156</div>
+                    <div className="text-sm text-gray-600">خدمة حكومية</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-rose-500 mb-2">89</div>
+                    <div className="text-sm text-gray-600">منظمة خيرية</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-500 mb-2">234</div>
+                    <div className="text-sm text-gray-600">مستشفى</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-purple-500 mb-2">127</div>
+                    <div className="text-sm text-gray-600">فندق</div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Enhanced Service Categories with Liquid Glass */}
+          {/* Enhanced Service Categories with Modern Glass Cards */}
           <section className="py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-16">
                 <h2 className="text-4xl font-bold text-gray-900 mb-4">
                   فئات الخدمات
                 </h2>
-                <p className="text-xl text-gray-600">
-                  اختر الفئة المناسبة للوصول إلى الخدمات المطلوبة
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  اختر الفئة المناسبة للوصول إلى الخدمات المطلوبة بسهولة وسرعة
                 </p>
               </div>
 
@@ -230,18 +300,15 @@ const AppContent: React.FC = () => {
                   return (
                     <div
                       key={category.id}
-                      className={`group relative overflow-hidden rounded-3xl transition-all duration-300 cursor-pointer backdrop-blur-xl bg-white/30 ${category.hoverBg} border-2 border-white/50 hover:border-white/70 hover:shadow-2xl hover:shadow-black/10 ring-1 ring-white/30 hover:ring-white/40`}
+                      className="group relative overflow-hidden rounded-3xl transition-all duration-300 cursor-pointer category-glass modern-card-border enhanced-ring hover-lift"
                     >
-                      {/* Subtle inner glow */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/25 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-                      
-                      {/* Enhanced border glow effect */}
-                      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 via-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {/* Enhanced inner glow with gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                       
                       {/* Content */}
                       <div className="relative p-8 h-full flex flex-col">
                         <div className="flex items-center justify-between mb-6">
-                          <div className={`p-4 rounded-2xl bg-gradient-to-br ${category.color} text-white shadow-lg shadow-black/20`}>
+                          <div className={`p-4 rounded-2xl bg-gradient-to-br ${category.color} text-white shadow-lg shadow-black/20 group-hover:shadow-xl group-hover:shadow-black/30 transition-shadow duration-300`}>
                             <Icon className="h-8 w-8" />
                           </div>
                           <div className="text-left">
@@ -259,7 +326,7 @@ const AppContent: React.FC = () => {
                           {category.name}
                         </h3>
                         
-                        <p className="text-gray-600 mb-6 flex-grow">
+                        <p className="text-gray-600 mb-6 flex-grow leading-relaxed">
                           {category.description}
                         </p>
                         
@@ -275,7 +342,10 @@ const AppContent: React.FC = () => {
                             </div>
                           </div>
                           
-                          <div className="w-2 h-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50" />
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <div className="w-2 h-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50 animate-pulse" />
+                            <span className="text-xs text-green-600 font-medium">متاح الآن</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -285,16 +355,68 @@ const AppContent: React.FC = () => {
             </div>
           </section>
 
+          {/* Features Section */}
+          <section className="py-20 bg-gradient-to-r from-gray-50/50 to-blue-50/30">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">
+                  لماذا مندلين؟
+                </h2>
+                <p className="text-xl text-gray-600">
+                  نقدم لك تجربة متميزة في الوصول للخدمات
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center p-8 rounded-2xl glass-card hover-lift">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Search className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">بحث ذكي</h3>
+                  <p className="text-gray-600">
+                    ابحث عن أي خدمة بسهولة باستخدام نظام البحث الذكي المتطور
+                  </p>
+                </div>
+
+                <div className="text-center p-8 rounded-2xl glass-card hover-lift">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Shield className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">آمن وموثوق</h3>
+                  <p className="text-gray-600">
+                    جميع الخدمات معتمدة ومراجعة لضمان أعلى مستويات الأمان والجودة
+                  </p>
+                </div>
+
+                <div className="text-center p-8 rounded-2xl glass-card hover-lift">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Phone className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">دعم مستمر</h3>
+                  <p className="text-gray-600">
+                    فريق دعم متاح على مدار الساعة لمساعدتك في أي استفسار أو مشكلة
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Footer */}
-          <footer className="relative py-12 border-t border-white/20 backdrop-blur-sm bg-white/30">
+          <footer className="relative py-16 border-t border-white/20 backdrop-blur-sm bg-white/30">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent mb-4">
+                <h3 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent mb-4">
                   مندلين
                 </h3>
-                <p className="text-gray-600">
-                  منصة شاملة لجميع الخدمات في مكان واحد
+                <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+                  منصة شاملة لجميع الخدمات في مكان واحد. نسعى لتسهيل الوصول إلى الخدمات الحكومية والخاصة بأفضل تجربة ممكنة.
                 </p>
+                
+                <div className="flex items-center justify-center space-x-6 space-x-reverse text-sm text-gray-500">
+                  <span>© 2025 مندلين. جميع الحقوق محفوظة.</span>
+                  <span>•</span>
+                  <span>صنع بـ ❤️ في السعودية</span>
+                </div>
               </div>
             </div>
           </footer>
