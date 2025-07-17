@@ -118,7 +118,6 @@ const AppContent: React.FC = () => {
           <div className="absolute top-1/3 left-10 w-64 h-64 bg-gradient-to-r from-emerald-200/25 to-teal-200/20 rounded-full blur-2xl opacity-30" />
           <div className="absolute bottom-1/3 right-10 w-72 h-72 bg-gradient-to-l from-rose-200/25 to-orange-200/20 rounded-full blur-2xl opacity-35" />
         </div>
-  };
 
         {/* Fixed Navbar with Enhanced Glass Effect */}
         <nav className="fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 border-b border-white/20 shadow-lg shadow-black/5">
